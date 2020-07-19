@@ -3,6 +3,7 @@
 
 
 # specific file types
+*.dbf
 *.html
 *.yml
 *.png
@@ -16,7 +17,6 @@
 *.Rds
 *.csv
 *.xlsx
-*.dbf
 
 # History files
 .Rhistory
