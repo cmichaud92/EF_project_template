@@ -1,6 +1,6 @@
 ---
 title: "SQLite db build"
-date: "1/2/2020"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
     keep_md: true
@@ -12,7 +12,7 @@ library(dplyr)
 library(dbplyr)
 library(RSQLite)
 
-con <-  dbConnect(RSQLite::SQLite(), "./EXAMPLE.sqlite")  ## change path and name to suit
+con <-  dbConnect(RSQLite::SQLite(), "./EXAMPLE.sqlite")  ## Change database name!!!
 
 knitr::opts_chunk$set(echo = TRUE,
                       connection = "con")
@@ -33,7 +33,7 @@ select sqlite_version();
 
 # Build tables
 
-If the database and tables exist, will throw error.  Will not overwrite an existing table. This rmd produces both .html and .md outputs, these are useful for documentation of database schema.
+This program will create a database in the project root directory.  If the database and tables already exist in this directory, it will throw an error and exit.  Will not overwrite an existing table. This rmd produces both .html and .md outputs, these are useful for documentation of database schema.
 
 ### Meta-Table
 

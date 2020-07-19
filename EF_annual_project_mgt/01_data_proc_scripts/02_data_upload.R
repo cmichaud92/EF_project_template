@@ -9,7 +9,7 @@ library(DBI)
 
 
 # Create db connection
-con <- dbConnect(RSQLite::SQLite(), "./sqlite_database/123a.sqlite")
+con <-  dbConnect(RSQLite::SQLite(), "./EXAMPLE.sqlite")  ## Change database name!!!
 #dbDisconnect(con)
 
 # View db tables (only works on esisting db)
@@ -17,34 +17,34 @@ con <- dbConnect(RSQLite::SQLite(), "./sqlite_database/123a.sqlite")
 # dbListFields(con, "site")
 
 # Import data
-site_tmp <- read_csv("./data/proofed_csv/proof_site_Dino1.csv") %>% 
-  mutate_if(is.POSIXct, as.character) %>% 
-  mutate(river = "GR") %>% 
+site_tmp <- read_csv("./EF_annual_project_mgt/data/proofed_csv/proof_site_Dino1.csv") %>%
+  mutate_if(is.POSIXct, as.character) %>%
+  mutate(river = "GR") %>%
   rename(project_code = project)
 
-fish_tmp <- read_csv("./data/proofed_csv/proof_fish_Dino1.csv")%>% 
+fish_tmp <- read_csv("./EF_annual_project_mgt/data/proofed_csv/proof_fish_Dino1.csv")%>%
   mutate_if(is.POSIXct, as.character)
 
-pit_tmp <- read_csv("./data/proofed_csv/proof_pittag_Dino1.csv") %>% 
+pit_tmp <- read_csv("./EF_annual_project_mgt/data/proofed_csv/proof_pittag_Dino1.csv") %>%
   mutate_at("pit_type", as.character)
 
-floy_tmp <- read_csv("./output/raw_csv/123a_pass1-2/raw_floy.csv")
+floy_tmp <- read_csv("./EF_annual_project_mgt/output/raw_csv/123a_ECHO_pass1-2/raw_floy.csv")
 
-water_tmp <- read_csv("./output/raw_csv/123a_pass1-2/raw_water.csv")
+water_tmp <- read_csv("./EF_annual_project_mgt/output/raw_csv/123a_ECHO_pass1-2/raw_water.csv")
 
-meta <- read_csv("./output/raw_csv/123a_pass1-2/raw_meta.csv")
+meta <- read_csv("./EF_annual_project_mgt/output/raw_csv/123a_ECHO_pass1-2/raw_meta.csv")
 #--------------------------------
-# Remove index columns                                      
+# Remove index columns
 #--------------------------------
 
 site <- select(site_tmp, -c(matches("_flg$|_index$|^key_")))
-fish <- select(fish_tmp, -c(matches("_flg$|_index$|^key_"))) %>% 
+fish <- select(fish_tmp, -c(matches("_flg$|_index$|^key_"))) %>%
   filter(!is.na(fish_id))
-pit <- select(pit_tmp, -c(species, matches("_flg$|_index$|^key_|^site"))) 
+pit <- select(pit_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
 
-floy <- select(floy_tmp, -c(species, matches("_flg$|_index$|^key_|^site"))) 
+floy <- select(floy_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
 
-water <- water_tmp %>% 
+water <- water_tmp %>%
   select(-key_a)
 
 

@@ -1,7 +1,7 @@
 ---
 title: "Electrofishing project update"
 author: 
-date: 
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output: html_document
 ---
 
@@ -22,13 +22,21 @@ mapviewOptions(basemaps = c("Stamen.Terrain", "Esri.WorldImagery", "OpenTopoMap"
 ```
 
 ```{r connection, include=FALSE}
-con <- dbConnect(RSQLite::SQLite(), "./sqlite_database/123a.sqlite")
-DBI::dbListTables(con)
+con <-  dbConnect(RSQLite::SQLite(), "./EXAMPLE.sqlite")  ## Change database name!!!
+dbListTables(con)
+```
+
+
+```{r}
+# Select year of interest
+
+yoi <- 2020
+
 ```
 
 ```{r data-io}
 site <- tbl(con, "site") %>%
-  filter(year == 2020) %>% 
+  filter(year == yoi) %>% 
   collect() %>% 
   mutate_at(vars(ends_with("time")), as.POSIXct)
 fish <- tbl(con, "fish") %>%
@@ -36,7 +44,7 @@ fish <- tbl(con, "fish") %>%
   collect() %>% 
   mutate_at(vars(ends_with("time")), as.POSIXct)
 
-DBI::dbDisconnect(con)
+dbDisconnect(con)
 ```
 
 ## Summary
