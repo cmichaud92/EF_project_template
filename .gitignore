@@ -16,6 +16,7 @@
 *.Rds
 *.csv
 *.xlsx
+*.dbf
 
 # History files
 .Rhistory
