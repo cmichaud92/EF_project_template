@@ -13,6 +13,7 @@
 *.tex
 *.db
 *.sqlite
+*.sqlite-journal
 *.zip
 *.Rds
 *.csv

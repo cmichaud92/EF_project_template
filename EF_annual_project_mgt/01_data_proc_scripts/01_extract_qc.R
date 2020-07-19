@@ -264,12 +264,18 @@ gs4_create(
 drive_mv(paste("raw", data_id, sep = "_"),
          path = '123a/')
 
-dir.create(paste0("./EF_annual_project_mgt/output/raw_csv/", data_id))
-write_csv(meta, paste0("./EF_annual_project_mgt/output/raw_csv/", data_id, "/raw_meta.csv"), na = "")
-write_csv(ck_site, paste0("./EF_annual_project_mgt/output/raw_csv/", data_id, "/raw_site.csv"), na = "")
-write_csv(ck_fish, paste0("./EF_annual_project_mgt/output/raw_csv/", data_id, "/raw_fish.csv"), na = "")
-write_csv(ck_pit, paste0("./EF_annual_project_mgt/output/raw_csv/", data_id, "/raw_pit.csv"), na = "")
-write_csv(ck_floy,paste0("./EF_annual_project_mgt/output/raw_csv/", data_id, "/raw_floy.csv"), na = "")
-write_csv(water, paste0("./EF_annual_project_mgt/output/raw_csv/", data_id, "/raw_water.csv"), na = "")
+# Create directory for QAQC check files
+dir.create("./EF_annual_project_mgt/output/", showWarnings = FALSE)
+dir.create("./EF_annual_project_mgt/output/qaqc_check/", showWarnings = FALSE)
+dir.create(paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id), showWarnings = FALSE)
+
+write_csv(meta, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_meta.csv"), na = "")
+write_csv(ck_site, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_site.csv"), na = "")
+write_csv(ck_fish, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_fish.csv"), na = "")
+write_csv(ck_pit, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_pit.csv"), na = "")
+write_csv(ck_floy,paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_floy.csv"), na = "")
+write_csv(water, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_water.csv"), na = "")
+
+dir.create("./EF_annual_project_mgt/data/proofed_csv/", showWarnings = FALSE)
 
 ## End

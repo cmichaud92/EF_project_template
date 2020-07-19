@@ -1,6 +1,6 @@
 ---
 title: "SQLite db build"
-date: "1/2/2020"
+date: "19 July, 2020"
 output:
   html_document:
     keep_md: true
@@ -35,7 +35,7 @@ Table: 1 records
 
 # Build tables
 
-If the database and tables exist, will throw error.  Will not overwrite an existing table. This rmd produces both .html and .md outputs, these are useful for documentation of database schema.
+This program will create a database in the project root directory.  If the database and tables already exist in this directory, it will throw an error and exit.  Will not overwrite an existing table. This rmd produces both .html and .md outputs, these are useful for documentation of database schema.
 
 ### Meta-Table
 

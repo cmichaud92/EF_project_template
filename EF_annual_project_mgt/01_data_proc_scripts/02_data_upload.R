@@ -28,11 +28,11 @@ fish_tmp <- read_csv("./EF_annual_project_mgt/data/proofed_csv/proof_fish_Dino1.
 pit_tmp <- read_csv("./EF_annual_project_mgt/data/proofed_csv/proof_pittag_Dino1.csv") %>%
   mutate_at("pit_type", as.character)
 
-floy_tmp <- read_csv("./EF_annual_project_mgt/output/raw_csv/123a_ECHO_pass1-2/raw_floy.csv")
+floy_tmp <- read_csv("./EF_annual_project_mgt/output/qaqc_check/123a_ECHO_pass1-2/raw_floy.csv")
 
-water_tmp <- read_csv("./EF_annual_project_mgt/output/raw_csv/123a_ECHO_pass1-2/raw_water.csv")
+water_tmp <- read_csv("./EF_annual_project_mgt/output/qaqc_check/123a_ECHO_pass1-2/raw_water.csv")
 
-meta <- read_csv("./EF_annual_project_mgt/output/raw_csv/123a_ECHO_pass1-2/raw_meta.csv")
+meta <- read_csv("./EF_annual_project_mgt/output/qaqc_check/123a_ECHO_pass1-2/raw_meta.csv")
 #--------------------------------
 # Remove index columns
 #--------------------------------
