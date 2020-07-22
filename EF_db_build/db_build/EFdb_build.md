@@ -1,6 +1,6 @@
 ---
 title: "SQLite db build"
-date: "19 July, 2020"
+date: "21 July, 2020"
 output:
   html_document:
     keep_md: true
@@ -46,15 +46,58 @@ This table includes metadata required by STReaMS and Heritage data submissions
 CREATE TABLE meta (
 meta_id INTEGER NOT NULL UNIQUE PRIMARY KEY,
 project_code TEXT NOT NULL,
-year INTEGER NOT NULL UNIQUE,
+`year` INTEGER NOT NULL UNIQUE,
 principal_fname TEXT NOT NULL,                      
 principal_lname TEXT NOT NULL,
 agency TEXT NOT NULL CHECK (agency IN ('UDWR-M', 'UDWR-V', 'CSU', 'FWS-GJ', 'FWS-V')),
 data_type TEXT NOT NULL CHECK (data_type IN ('EL', 'SE', 'TR', 'ANT', 'OT'))
 );
+```
+
+
+```sql
+
+CREATE UNIQUE INDEX idx_meta_site ON meta (project_code, `year`);
 
 ```
 
+
+```sql
+PRAGMA index_list('meta');
+```
+
+
+<div class="knitsql-table">
+
+
+Table: 3 records
+
+|seq |name                    | unique|origin | partial|
+|:---|:-----------------------|------:|:------|-------:|
+|0   |idx_meta_site           |      1|c      |       0|
+|1   |sqlite_autoindex_meta_2 |      1|u      |       0|
+|2   |sqlite_autoindex_meta_1 |      1|u      |       0|
+
+</div>
+
+
+```sql
+
+PRAGMA index_info('idx_meta_site');
+```
+
+
+<div class="knitsql-table">
+
+
+Table: 2 records
+
+|seqno | cid|name         |
+|:-----|---:|:------------|
+|0     |   1|project_code |
+|1     |   2|year         |
+
+</div>
 
 ### Site-Table
 
@@ -76,8 +119,7 @@ el_sec INTERGER NOT NULL CHECK (el_sec != 0),
 boat TEXT,
 crew TEXT,
 site_notes TEXT,
-FOREIGN KEY (project_code) REFERENCES meta(project_code),
-FOREIGN KEY (year) REFERENCES meta(year)
+FOREIGN KEY (project_code, year) REFERENCES meta(project_code, year)
 );
 ```
 

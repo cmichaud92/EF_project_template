@@ -43,15 +43,29 @@ This table includes metadata required by STReaMS and Heritage data submissions
 CREATE TABLE meta (
 meta_id INTEGER NOT NULL UNIQUE PRIMARY KEY,
 project_code TEXT NOT NULL,
-year INTEGER NOT NULL UNIQUE,
+`year` INTEGER NOT NULL UNIQUE,
 principal_fname TEXT NOT NULL,                      
 principal_lname TEXT NOT NULL,
 agency TEXT NOT NULL CHECK (agency IN ('UDWR-M', 'UDWR-V', 'CSU', 'FWS-GJ', 'FWS-V')),
 data_type TEXT NOT NULL CHECK (data_type IN ('EL', 'SE', 'TR', 'ANT', 'OT'))
 );
+```
+
+```{sql}
+
+CREATE UNIQUE INDEX idx_meta_site ON meta (project_code, `year`);
+
 
 ```
 
+```{sql}
+PRAGMA index_list('meta');
+```
+
+```{sql}
+
+PRAGMA index_info('idx_meta_site');
+```
 
 ### Site-Table
 
@@ -72,8 +86,7 @@ el_sec INTERGER NOT NULL CHECK (el_sec != 0),
 boat TEXT,
 crew TEXT,
 site_notes TEXT,
-FOREIGN KEY (project_code) REFERENCES meta(project_code),
-FOREIGN KEY (year) REFERENCES meta(year)
+FOREIGN KEY (project_code, year) REFERENCES meta(project_code, year)
 );
 ```
 
