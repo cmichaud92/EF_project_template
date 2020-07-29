@@ -18,6 +18,7 @@
 *.Rds
 *.csv
 *.xlsx
+*.remotedb
 
 # History files
 .Rhistory
