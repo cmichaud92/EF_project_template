@@ -22,21 +22,17 @@ source("./EF_annual_project_mgt/src/fun/exclude.R")
 #source("./src/fun/dbf_io_138.R")
 source("./EF_annual_project_mgt/src/fun/dp_ef_qcfx_csv.R")
 
-# Create common species vector
-#com_spp <- c("CS", "RZ", "HB", "BT", "SD", "FM", "BH", "RT", "SM", "BC",
-#             "LG", "BG", "GS", "GC", "BB", "YB", "WE", "GZ", "NP", "WS", "CH")
-#native <- c("CS", "RZ", "HB", "BT", "FM", "BH", "RT", "SD", "CH")
 
-#-------------------------------------------------------------------------------
+#------------------------
+# Required inputs!!!!
+#------------------------
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Data set name
+data_id <- "Dino_1"
 
-# Set starting sample number                                            !!!!!!!!
-start_num <- 1                                                          #!!!!!!!
+# Set starting sample number
+start_num <- 1
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-#-------------------------------------------------------------------------------
 
 #-------------------------------
 # Create row for meta table
@@ -65,11 +61,13 @@ data <- dbf_io(file_path_in = "./EF_annual_project_mgt/data/dbf/123a_1") %>%
 # Create dataset identifier
 #-------------------------------
 
-min_pass <- min(data$site$pass)
-max_pass <- max(data$site$pass)
-proj <- data$site$project[1]
-rch <- data$site$reach[1]
-data_id <- paste0(proj, "_", rch, "_pass", min_pass, "-", max_pass)
+# Use manual definition for now...
+
+# min_pass <- min(data$site$pass)
+# max_pass <- max(data$site$pass)
+# proj <- data$site$project[1]
+# rch <- data$site$reach[1]
+# data_id <- paste0(proj, "_", rch, "_pass", min_pass, "-", max_pass)
 
 #------------------------------
 # Import reach table
@@ -244,6 +242,8 @@ ck_pit <- pit_qcfx(pit_data = pittag, fish_data = fish)
 
 ck_floy <- floy_qcfx(floy_data = floytag, fish_data = fish)
 
+ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
+
 #------------------------------
 # Upload data to google drive
 #------------------------------
@@ -254,6 +254,7 @@ gs4_auth(token = drive_token())
 gs4_create(
   name = paste("raw", data_id, sep = "_"),
   sheets = list(meta = meta,
+                stats = ck_stat,
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
@@ -264,18 +265,22 @@ gs4_create(
 drive_mv(paste("raw", data_id, sep = "_"),
          path = '123a/')
 
-# Create directory for QAQC check files
-dir.create("./EF_annual_project_mgt/output/", showWarnings = FALSE)
-dir.create("./EF_annual_project_mgt/output/qaqc_check/", showWarnings = FALSE)
-dir.create(paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id), showWarnings = FALSE)
+#---------------------------------
+# If using csv workflow...
+#---------------------------------
 
-write_csv(meta, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_meta.csv"), na = "")
-write_csv(ck_site, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_site.csv"), na = "")
-write_csv(ck_fish, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_fish.csv"), na = "")
-write_csv(ck_pit, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_pit.csv"), na = "")
-write_csv(ck_floy,paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_floy.csv"), na = "")
-write_csv(water, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_water.csv"), na = "")
-
-dir.create("./EF_annual_project_mgt/data/proofed_csv/", showWarnings = FALSE)
+# # Create directory for QAQC check files
+# dir.create("./EF_annual_project_mgt/output/", showWarnings = FALSE)
+# dir.create("./EF_annual_project_mgt/output/qaqc_check/", showWarnings = FALSE)
+# dir.create(paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id), showWarnings = FALSE)
+#
+# write_csv(meta, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_meta.csv"), na = "")
+# write_csv(ck_site, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_site.csv"), na = "")
+# write_csv(ck_fish, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_fish.csv"), na = "")
+# write_csv(ck_pit, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_pit.csv"), na = "")
+# write_csv(ck_floy,paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_floy.csv"), na = "")
+# write_csv(water, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_water.csv"), na = "")
+#
+# dir.create("./EF_annual_project_mgt/data/proofed_csv/", showWarnings = FALSE)
 
 ## End

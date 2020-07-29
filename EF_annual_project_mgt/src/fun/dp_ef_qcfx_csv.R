@@ -12,7 +12,7 @@ library(lubridate)
 # Site table QC
 #--------------------
 site_qcfx <- function(site_data) {
-  site_data %>% 
+  site_data %>%
   mutate(rmi_length_flg = ifelse(start_rmi - end_rmi > 5 | start_rmi < end_rmi, "FLAG", ""),
          rmi_flg = case_when(reach == "ECHO" & between(start_rmi, 319.9, 344.4) &
                                reach == "ECHO" & between(end_rmi, 319.9, 344.4)~ "",
@@ -27,21 +27,21 @@ site_qcfx <- function(site_data) {
                              TRUE ~ "FLAG"),
          datetime_flg = ifelse(as.duration(enddatetime - startdatetime)  < as.duration(el_sec), "FLAG", ""),
          el_sec_flg = ifelse(el_sec > 7200 | el_sec < 1000, "FLAG", ""),
-         NA_flg = ifelse(apply(select(., s_index:crew), 1, function(x){any(is.na(x))}), "FLAG", "")) #%>% 
+         NA_flg = ifelse(apply(select(., s_index:crew), 1, function(x){any(is.na(x))}), "FLAG", "")) #%>%
 }
 
 #site_qcfx(site_data = site)
 #-------------------
 # Fish table QC
 #-------------------
-fish_qcfx <- function(fish_data, site_data) { 
-  
+fish_qcfx <- function(fish_data, site_data) {
+
   native <- c("CS", "RZ", "HB", "BT", "FM", "BH", "RT", "SD", "CH")
   com_spp <- c("CS", "RZ", "HB", "BT", "SD", "FM", "BH", "RT", "SM", "BC",
                "LG", "BG", "GS", "GC", "BB", "YB", "WE", "GZ", "NP", "WS", "CH")
-  site_data %>% 
-    select(s_index, site_id, key_a) %>% 
-    full_join(fish_data) %>% 
+  site_data %>%
+    select(s_index, site_id, key_a) %>%
+    full_join(fish_data) %>%
     mutate(orphan_flg = ifelse(is.na(s_index), "FLAG", ""),
            zero_catch_flg = ifelse(is.na(fish_id), "FLAG", ""),
            rmi_flg = case_when(reach == "ECHO" & between(rmi, 319.9, 344.4) ~ "",
@@ -55,7 +55,7 @@ fish_qcfx <- function(fish_data, site_data) {
            weight_flg = ifelse(species %!in% c("CC", "GC", "NP") & weight > 2800, "FLAG", ""),
            disp_flg = ifelse(disp == "DE" & species %in% native |
                                disp == "RA" & species %!in% native |
-                               is.na(disp), 
+                               is.na(disp),
                              "FLAG", ""))
 }
 
@@ -63,9 +63,9 @@ fish_qcfx <- function(fish_data, site_data) {
 # Pittag table QC
 #--------------------
 pit_qcfx <- function(pit_data, fish_data) {
-  fish_data %>% 
-    select(f_index, fish_id, species) %>% 
-    right_join(pit_data) %>% 
+  fish_data %>%
+    select(f_index, fish_id, species) %>%
+    right_join(pit_data) %>%
     mutate(orphan_flg = ifelse(is.na(f_index), "FLAG", ""),
            nnf_flg = ifelse(pit_recap == "NNF", "FLAG", ""),
            pit_recap_flg = ifelse(is.na(pit_recap) & !is.na(pit_num) |
@@ -83,14 +83,33 @@ floy_qcfx <- function(floy_data, fish_data) {
     mutate(NA_flg = ifelse(apply(select(., fl_index:floy_recap), 1, function(x){any(is.na(x))}), "FLAG", ""))
 }
 
-# ck2 <- site_qcfx(site_qc)
-# 
-# # Subset dataframe based on flag cols == TRUE and assess errors
-# ck_site <- site_qctmp %>% 
+#---------------------
+# Stats
+#---------------------
+
+stats_qcfx <- function(site_data, fish_data) {
+  f <- fish_data %>%
+    filter(species == "SM") %>%
+    group_by(site_id) %>%
+    summarise(SM = n(),
+              .groups = "drop")
+  site_data %>%
+    left_join(f, by = "site_id") %>%
+    group_by(pass) %>%
+    summarise(n_site = n(),
+              effort_hr = round(sum(el_sec) / 3600, 2),
+              SM = sum(SM, na.rm = TRUE),
+              cpue = round(SM / effort_hr, 2),
+              .groups = "drop")
+}
+
+## Code below removes all rows NOT containing  a flag
+#
+# ck_site <- site_qctmp %>%
 #   filter_at(vars(ends_with("flg")), any_vars(. == "FLAG"))
-# 
-# ck_fish <- fish_qctmp %>% 
+#
+# ck_fish <- fish_qctmp %>%
 #   filter_at(vars(ends_with("flg")), any_vars(. == "FLAG"))
-# 
-# ck_pit <- pit_qctmp %>% 
+#
+# ck_pit <- pit_qctmp %>%
 #   filter_at(vars(ends_with("flg")), any_vars(. == "FLAG"))
