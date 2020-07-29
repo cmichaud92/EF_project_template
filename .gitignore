@@ -1,6 +1,7 @@
 
 # Other folders
 /.dio
+/test_db/**
 
 # specific file types
 *.dbf
