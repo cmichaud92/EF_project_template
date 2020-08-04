@@ -31,10 +31,12 @@ source("./EF_annual_project_mgt/src/fun/dp_ef_qcfx_csv.R")
 data_id <- "Dino2_Deso"
 
 # Set starting sample number
-start_num <- 47
+start_num <- 48
 
 # Name of directory containing target dataset
 dir_name <- "123a_2"
+
+year <- year(now())
 
 #-------------------------------
 # Create row for meta table
@@ -44,7 +46,7 @@ dir_name <- "123a_2"
 
 meta <- tibble(
   project_code = "123a",
-  year = 2020,
+  year = year,
   principal_fname = "John",
   principal_lname = "Caldwell",
   agency = "UDWR-M",
@@ -246,26 +248,26 @@ ck_pit <- pit_qcfx(pit_data = pittag, fish_data = fish)
 
 ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
 
-# #------------------------------
-# # Upload data to google drive
-# #------------------------------
-# drive_auth(email = "cmichaud@utah.gov")
-#
-# gs4_auth(token = drive_token())
-#
-# gs4_create(
-#   name = paste("raw", data_id, sep = "_"),
-#   sheets = list(meta = meta,
-#                 stats = ck_stat,
-#                 ck_site = ck_site,
-#                 ck_fish = ck_fish,
-#                 ck_pit = ck_pit,
-# #                ck_floy = ck_floy,
-#                 water = water)
-#   )
-#
-# drive_mv(paste("raw", data_id, sep = "_"),
-#          path = '123a/')
+#------------------------------
+# Upload data to google drive
+#------------------------------
+drive_auth(email = "cmichaud@utah.gov")
+
+gs4_auth(token = drive_token())
+
+gs4_create(
+  name = paste("TEST_raw", data_id, sep = "_"),
+  sheets = list(meta = meta,
+                stats = ck_stat,
+                ck_site = ck_site,
+                ck_fish = ck_fish,
+                ck_pit = ck_pit,
+#                ck_floy = ck_floy,
+                water = water)
+  )
+
+drive_mv(paste("TEST_raw", data_id, sep = "_"),
+         path = 'EL_project_template_test/')
 
 #---------------------------------
 # If using csv workflow...

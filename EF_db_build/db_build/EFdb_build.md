@@ -1,6 +1,6 @@
 ---
 title: "SQLite db build"
-date: "21 July, 2020"
+date: "04 August, 2020"
 output:
   html_document:
     keep_md: true
@@ -160,7 +160,7 @@ fish_id TEXT NOT NULL UNIQUE PRIMARY KEY,
 site_id TEXT NOT NULL, 
 datetime TEXT,
 rmi REAL NOT NULL,
-species TEXT NOT NULL CHECK (species IN ('BCT', 'BH', 'BHRZ', 'BT', 'CH', 'CS', 'FB', 'FM', 'FR', 'HB', 'MF', 'RT', 'RZ', 'SD', 'SU', 'BB', 'BC', 'BG', 'BN', 'BS', 'CC', 'CP', 'FH', 'GA', 'GC', 'GS', 'GZ', 'KO', 'LG', 'NP', 'PK', 'RB', 'RD', 'RS', 'SB', 'SM', 'SS', 'UC', 'WB', 'WC', 'WE', 'WF', 'WS', 'YB', 'YP', 'OT', 'UM', 'UI', 'UNK')),
+species TEXT NOT NULL CHECK (species IN ('BB', 'BC', 'BCT', 'BEAV', 'BFL', 'BFW', 'BG', 'BGGS', 'BH', 'BHLS', 'BHRZ', 'BHWS', 'BK', 'BLW', 'BM', 'BN', 'BR', 'BS', 'BT', 'BU', 'CC', 'CH', 'CHBT', 'CHHB', 'CHRT', 'CP', 'CR', 'CRCT', 'CS', 'CT', 'FB', 'FH', 'FM', 'FMLS', 'FR', 'GA', 'GC', 'GD', 'GS', 'GZ', 'HB', 'ID', 'IN', 'KO', 'KOI', 'LD', 'LG', 'LK', 'LM', 'LS', 'LSWS', 'MF', 'MS', 'MT', 'NP', 'PK', 'RB', 'RC', 'RD', 'RH', 'RS', 'RT', 'RTBT', 'RZ', 'RZWS', 'SB', 'SD', 'SM', 'SP', 'SS', 'SU', 'TM', 'TS', 'UC', 'UI', 'UM', 'WB', 'WC', 'WE', 'WF', 'WS', 'YB', 'YP')),
 tot_length INTEGER CHECK (tot_length != 0), 
 weight INTEGER CHECK (weight != 0),
 sex TEXT CHECK (sex IN ('F', 'M', 'I', NULL)),

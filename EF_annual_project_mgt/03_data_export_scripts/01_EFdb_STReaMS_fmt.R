@@ -17,7 +17,7 @@ library(UCRBtools)
 #------------------------------
 # Connect to local SQLite
 #------------------------------
-con <-  dbConnect(RSQLite::SQLite(), "./EXAMPLE.sqlite")  ## Change database name!!!
+con <-  dbConnect(RSQLite::SQLite(), "./TEST_EL_database.sqlite")  ## Change database name!!!
 
 #dbDisconnect(con)
 
@@ -113,7 +113,7 @@ dir.create("./EF_annual_project_mgt/output/db_export_xlsx", showWarnings = FALSE
 STReaMS_xlsx_wkbk(
   data = data,
   year = yoi,
-  Project = "EXAMPLE",
+  Project = "TEST",
   output_path = "./EF_annual_project_mgt/output/db_export_xlsx"
 )
 
