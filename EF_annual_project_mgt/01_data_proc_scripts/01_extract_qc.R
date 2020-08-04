@@ -24,15 +24,17 @@ source("./EF_annual_project_mgt/src/fun/dp_ef_qcfx_csv.R")
 
 
 #------------------------
-# Required inputs!!!!
+# Required variables
 #------------------------
 
 # Data set name
-data_id <- "Dino_1"
+data_id <- "Dino2_Deso"
 
 # Set starting sample number
-start_num <- 1
+start_num <- 47
 
+# Name of directory containing target dataset
+dir_name <- "123a_2"
 
 #-------------------------------
 # Create row for meta table
@@ -53,7 +55,7 @@ meta <- tibble(
 # Import field data (dbf)
 #-------------------------------
 
-data <- dbf_io(file_path_in = "./EF_annual_project_mgt/data/dbf/123a_1") %>%
+data <- dbf_io(file_path_in = paste0("./EF_annual_project_mgt/data/dbf/", dir_name)) %>%
   map(rename_all, tolower) %>%
   compact()
 
@@ -106,11 +108,11 @@ pit_tmp <- map_df(data[grepl("pittag", names(data))], bind_rows) %>%
   filter(!is.na(pit_num)) %>%
   mutate_all(na_if, "Z")                                                # Converts "Z"s to NA
 
-# Floytag
-floy_tmp <- map_df(data[grepl("floytag", names(data))], bind_rows) %>%
-  filter(!is.na(floy_num)) %>%
-  mutate_all(na_if, "Z") %>%
-  select(-floy_id)
+# # Floytag
+# floy_tmp <- map_df(data[grepl("floytag", names(data))], bind_rows) %>%
+#   filter(!is.na(floy_num)) %>%
+#   mutate_all(na_if, "Z") %>%
+#   select(-floy_id)
 
 #------------------------------
 # Modify data
@@ -216,17 +218,17 @@ pittag <- left_join(pit_tmp, samp_n, by = "key_a") %>%
          species,pit_type, pit_num, pit_recap,
          pit_notes, key_a)
 
-# Floytag table
-
-floytag <- left_join(floy_tmp, samp_n, by = "key_a") %>%
-  rename(floy_id = key_aab,
-         fish_id = key_aa) %>%
-  left_join(select(fish, fish_id, datetime, species), by = c("fish_id")) %>%
-  arrange(datetime) %>%
-  mutate(fl_index = row_number()) %>%
-  select(fl_index, floy_id, fish_id, site_id,
-         species, floy_color, floy_num, floy_recap,
-         floy_notes)
+# # Floytag table
+#
+# floytag <- left_join(floy_tmp, samp_n, by = "key_a") %>%
+#   rename(floy_id = key_aab,
+#          fish_id = key_aa) %>%
+#   left_join(select(fish, fish_id, datetime, species), by = c("fish_id")) %>%
+#   arrange(datetime) %>%
+#   mutate(fl_index = row_number()) %>%
+#   select(fl_index, floy_id, fish_id, site_id,
+#          species, floy_color, floy_num, floy_recap,
+#          floy_notes)
 
 #------------------------------
 # QC data.tables
@@ -240,30 +242,30 @@ ck_fish <- fish_qcfx(fish_data = fish, site_data = site) %>%
 
 ck_pit <- pit_qcfx(pit_data = pittag, fish_data = fish)
 
-ck_floy <- floy_qcfx(floy_data = floytag, fish_data = fish)
+#ck_floy <- floy_qcfx(floy_data = floytag, fish_data = fish)
 
 ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
 
-#------------------------------
-# Upload data to google drive
-#------------------------------
-drive_auth(email = "cmichaud@utah.gov")
-
-gs4_auth(token = drive_token())
-
-gs4_create(
-  name = paste("raw", data_id, sep = "_"),
-  sheets = list(meta = meta,
-                stats = ck_stat,
-                ck_site = ck_site,
-                ck_fish = ck_fish,
-                ck_pit = ck_pit,
-                ck_floy = ck_floy,
-                water = water)
-  )
-
-drive_mv(paste("raw", data_id, sep = "_"),
-         path = '123a/')
+# #------------------------------
+# # Upload data to google drive
+# #------------------------------
+# drive_auth(email = "cmichaud@utah.gov")
+#
+# gs4_auth(token = drive_token())
+#
+# gs4_create(
+#   name = paste("raw", data_id, sep = "_"),
+#   sheets = list(meta = meta,
+#                 stats = ck_stat,
+#                 ck_site = ck_site,
+#                 ck_fish = ck_fish,
+#                 ck_pit = ck_pit,
+# #                ck_floy = ck_floy,
+#                 water = water)
+#   )
+#
+# drive_mv(paste("raw", data_id, sep = "_"),
+#          path = '123a/')
 
 #---------------------------------
 # If using csv workflow...

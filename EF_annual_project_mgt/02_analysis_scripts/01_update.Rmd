@@ -22,7 +22,7 @@ mapviewOptions(basemaps = c("Stamen.Terrain", "Esri.WorldImagery", "OpenTopoMap"
 ```
 
 ```{r connection, include=FALSE}
-con <-  dbConnect(RSQLite::SQLite(), "./EXAMPLE.sqlite")  ## Change database name!!!
+con <-  dbConnect(RSQLite::SQLite(), "./123a.sqlite")  ## Change database name!!!
 dbListTables(con)
 ```
 
