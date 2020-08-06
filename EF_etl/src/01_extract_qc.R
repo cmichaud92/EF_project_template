@@ -18,24 +18,24 @@ library(googledrive)
 library(UCRBtools)
 
 # source functions
-source("./EF_annual_project_mgt/src/fun/exclude.R")
-#source("./src/fun/dbf_io_138.R")
-source("./EF_annual_project_mgt/src/fun/dp_ef_qcfx_csv.R")
-
+source("./EF_etl/src/fun/dp_ef_qcfx_csv.R")
+# build "exclude"
+`%!in%` <- Negate(`%in%`)
 
 #------------------------
 # Required variables
 #------------------------
 
 # Data set name
-data_id <- "Dino2_Deso"
+data_id <- "Dino1"
 
 # Set starting sample number
-start_num <- 48
+start_num <- 1
 
 # Name of directory containing target dataset
-dir_name <- "123a_2"
+dir_name <- "dbf_123a_1"
 
+# Data year
 year <- year(now())
 
 #-------------------------------
@@ -57,7 +57,7 @@ meta <- tibble(
 # Import field data (dbf)
 #-------------------------------
 
-data <- dbf_io(file_path_in = paste0("./EF_annual_project_mgt/data/dbf/", dir_name)) %>%
+data <- dbf_io(file_path_in = paste0("./EF_etl/data/", dir_name)) %>%
   map(rename_all, tolower) %>%
   compact()
 
@@ -110,11 +110,11 @@ pit_tmp <- map_df(data[grepl("pittag", names(data))], bind_rows) %>%
   filter(!is.na(pit_num)) %>%
   mutate_all(na_if, "Z")                                                # Converts "Z"s to NA
 
-# # Floytag
-# floy_tmp <- map_df(data[grepl("floytag", names(data))], bind_rows) %>%
-#   filter(!is.na(floy_num)) %>%
-#   mutate_all(na_if, "Z") %>%
-#   select(-floy_id)
+# Floytag
+floy_tmp <- map_df(data[grepl("floytag", names(data))], bind_rows) %>%
+  filter(!is.na(floy_num)) %>%
+  mutate_all(na_if, "Z") %>%
+  select(-floy_id)
 
 #------------------------------
 # Modify data
@@ -220,17 +220,17 @@ pittag <- left_join(pit_tmp, samp_n, by = "key_a") %>%
          species,pit_type, pit_num, pit_recap,
          pit_notes, key_a)
 
-# # Floytag table
-#
-# floytag <- left_join(floy_tmp, samp_n, by = "key_a") %>%
-#   rename(floy_id = key_aab,
-#          fish_id = key_aa) %>%
-#   left_join(select(fish, fish_id, datetime, species), by = c("fish_id")) %>%
-#   arrange(datetime) %>%
-#   mutate(fl_index = row_number()) %>%
-#   select(fl_index, floy_id, fish_id, site_id,
-#          species, floy_color, floy_num, floy_recap,
-#          floy_notes)
+# Floytag table
+
+floytag <- left_join(floy_tmp, samp_n, by = "key_a") %>%
+  rename(floy_id = key_aab,
+         fish_id = key_aa) %>%
+  left_join(select(fish, fish_id, datetime, species), by = c("fish_id")) %>%
+  arrange(datetime) %>%
+  mutate(fl_index = row_number()) %>%
+  select(fl_index, floy_id, fish_id, site_id,
+         species, floy_color, floy_num, floy_recap,
+         floy_notes)
 
 #------------------------------
 # QC data.tables
@@ -244,7 +244,7 @@ ck_fish <- fish_qcfx(fish_data = fish, site_data = site) %>%
 
 ck_pit <- pit_qcfx(pit_data = pittag, fish_data = fish)
 
-#ck_floy <- floy_qcfx(floy_data = floytag, fish_data = fish)
+ck_floy <- floy_qcfx(floy_data = floytag, fish_data = fish)
 
 ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
 
@@ -262,7 +262,7 @@ gs4_create(
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
-#                ck_floy = ck_floy,
+                ck_floy = ck_floy,
                 water = water)
   )
 
