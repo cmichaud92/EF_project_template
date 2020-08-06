@@ -53,7 +53,7 @@ Add general observations here, start dates, end dates, river flow.  This can be 
 
 you can also add pictures and captions...
 
-![Smallmouth removed from lower Westwater Canyon, 5/21/2020](c:/Users/cmichaud/proj_mgt/proj/proj_123d/asset/IMG_1249.JPG)
+```![caption](c:/path_to_image.JPG)```
 
 You need to use absolute filepaths...
 
@@ -93,7 +93,7 @@ lf <- fish %>%
 
 lf %>% 
   ggplot() +
-  geom_histogram(aes(x = tot_length, fill = reach), color = "black") +
+  geom_freqpoly(aes(x = tot_length, color = reach), lwd = 2) +
   labs(title = "Length frequency for smallmouth bass by reach",
        x = "Total length (mm)",
        y = "Number of smallmouth bass")

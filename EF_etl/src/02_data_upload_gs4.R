@@ -10,8 +10,15 @@ library(googledrive)
 library(googlesheets4)
 
 
+# Name of google sheets document containing PROOFED data to upload
+proof_data <- "TEST_Proof_Dino2_Deso"
+
+# Path to sqlite database
+db_path <- "./TEST_EL_database.sqlite"
+
 # Create db connection
-con <-  dbConnect(RSQLite::SQLite(), "./TEST_EL_database.sqlite")  ## Change database name!!!
+con <-  dbConnect(RSQLite::SQLite(), db_path)
+
 #dbDisconnect(con)
 
 
@@ -21,12 +28,9 @@ drive_auth(email = "cmichaud@utah.gov")
 gs4_auth(token = drive_token())
 
 # Download proofed dataset
-sets <- drive_get("Test_Proof_Dino2_Deso")
+sets <- drive_get(proof_data)
 
 
-# View db tables (only works on esisting db)
-# dbListTables(con)
-# dbListFields(con, "site")
 
 # Import data
 site_tmp <- read_sheet(sets[1, ], range = "ck_site") %>%
@@ -39,11 +43,12 @@ fish_tmp <- read_sheet(sets[1, ], range = "ck_fish")%>%
 pit_tmp <- read_sheet(sets[1, ], range = "ck_pit") %>%
   mutate_at("pit_type", as.character)
 
-# floy_tmp <- read_sheet(sets[1, ], range = "ck_floy")
+floy_tmp <- read_sheet(sets[1, ], range = "ck_floy")
 
 water_tmp <- read_sheet(sets[1, ], range = "water")
 
 meta <- read_sheet(sets[1, ], range = "meta")
+
 #--------------------------------
 # Remove index columns
 #--------------------------------
@@ -53,7 +58,7 @@ fish <- select(fish_tmp, -c(matches("_flg$|_index$|^key_"), reach)) %>%
   filter(!is.na(fish_id))
 pit <- select(pit_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
 
-# floy <- select(floy_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
+floy <- select(floy_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
 
 water <- water_tmp %>%
   select(-key_a)
@@ -71,7 +76,7 @@ dbWriteTable(con, name = "fish", value = fish, append = TRUE)
 
 dbWriteTable(con, name = "pittag", value = pit, append = TRUE)
 
-#dbWriteTable(con, name = "floytag", value = floy, append = TRUE)
+dbWriteTable(con, name = "floytag", value = floy, append = TRUE)
 
 
 # Disconnect

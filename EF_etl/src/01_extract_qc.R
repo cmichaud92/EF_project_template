@@ -27,13 +27,13 @@ source("./EF_etl/src/fun/dp_ef_qcfx_csv.R")
 #------------------------
 
 # Data set name
-data_id <- "Dino1"
+data_id <- "Dino2_Deso"
 
 # Set starting sample number
 start_num <- 1
 
 # Name of directory containing target dataset
-dir_name <- "dbf_123a_1"
+dir_name <- "dbf_123a_2"
 
 # Data year
 year <- year(now())
@@ -262,7 +262,7 @@ gs4_create(
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
-                ck_floy = ck_floy,
+#                ck_floy = ck_floy,
                 water = water)
   )
 
