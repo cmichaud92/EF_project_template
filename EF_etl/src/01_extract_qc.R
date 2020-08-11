@@ -16,21 +16,26 @@ library(sf)
 library(googlesheets4)
 library(googledrive)
 library(UCRBtools)
+library(DBI)
 
 # source functions
 source("./EF_etl/src/fun/dp_ef_qcfx_csv.R")
+
 # build "exclude"
 `%!in%` <- Negate(`%in%`)
 
 #------------------------
 # Required variables
 #------------------------
+# Path to sqlite database
+# db_path <- "exact path to my_database.sqlite"
+db_path <- "./123a_TEST.sqlite"
 
-# Data set name
+# Project code
+proj <- "123a"
+
+# Data set name: Create a unique data set name
 data_id <- "Dino2_Deso"
-
-# Set starting sample number
-start_num <- 1
 
 # Name of directory containing target dataset
 dir_name <- "dbf_123a_2"
@@ -38,11 +43,30 @@ dir_name <- "dbf_123a_2"
 # Data year
 year <- year(now())
 
+#--------------------------
+# Connect to db to determine ending sample numner
+
+con <- dbConnect(RSQLite::SQLite(), db_path)
+
+# Adds 1 to the last sample number currently in the database
+start_num <- 1 +
+  (tbl(con, "site") %>%
+  pull(site_id) %>%
+  max() %>%
+  str_sub(start = -3) %>%
+  as.integer())
+
+dbDisconnect(con)
+
+# Set starting sample number manually (value = 1) for initial data set each year
+# start_num <- 1
+
 #-------------------------------
 # Create row for meta table
 #-------------------------------
 
 # Add project_code and principal!!!!!
+# This is only required for the first data set each year
 
 meta <- tibble(
   project_code = "123a",
@@ -57,27 +81,11 @@ meta <- tibble(
 # Import field data (dbf)
 #-------------------------------
 
+# This creates a large list, each dbf table is a separate list element
+
 data <- dbf_io(file_path_in = paste0("./EF_etl/data/", dir_name)) %>%
   map(rename_all, tolower) %>%
   compact()
-
-#-------------------------------
-# Create dataset identifier
-#-------------------------------
-
-# Use manual definition for now...
-
-# min_pass <- min(data$site$pass)
-# max_pass <- max(data$site$pass)
-# proj <- data$site$project[1]
-# rch <- data$site$reach[1]
-# data_id <- paste0(proj, "_", rch, "_pass", min_pass, "-", max_pass)
-
-#------------------------------
-# Import reach table
-#------------------------------
-
-# rvr_join <- read_rds("./data/rvr_rch_tbl.rds")
 
 #------------------------------
 # Extract data from list
@@ -256,35 +264,21 @@ drive_auth(email = "cmichaud@utah.gov")
 gs4_auth(token = drive_token())
 
 gs4_create(
-  name = paste("TEST_raw", data_id, sep = "_"),
+  name = paste(proj, data_id, "TEST_raw",sep = "_"),
   sheets = list(meta = meta,
                 stats = ck_stat,
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
-#                ck_floy = ck_floy,
+                ck_floy = ck_floy,
                 water = water)
   )
 
-drive_mv(paste("TEST_raw", data_id, sep = "_"),
-         path = 'EL_project_template_test/')
+# Create a directory on google drive to store project specific data and move file
+# This moves data to 'project_template_test/' in google drive. Otherwise sheets is
+# created in the google drive root directory
 
-#---------------------------------
-# If using csv workflow...
-#---------------------------------
-
-# # Create directory for QAQC check files
-# dir.create("./EF_annual_project_mgt/output/", showWarnings = FALSE)
-# dir.create("./EF_annual_project_mgt/output/qaqc_check/", showWarnings = FALSE)
-# dir.create(paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id), showWarnings = FALSE)
-#
-# write_csv(meta, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_meta.csv"), na = "")
-# write_csv(ck_site, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_site.csv"), na = "")
-# write_csv(ck_fish, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_fish.csv"), na = "")
-# write_csv(ck_pit, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_pit.csv"), na = "")
-# write_csv(ck_floy,paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_floy.csv"), na = "")
-# write_csv(water, paste0("./EF_annual_project_mgt/output/qaqc_check/", data_id, "/raw_water.csv"), na = "")
-#
-# dir.create("./EF_annual_project_mgt/data/proofed_csv/", showWarnings = FALSE)
+drive_mv(paste(proj, data_id, "TEST_raw",sep = "_"),
+         path = 'project_template_test/')
 
 ## End
