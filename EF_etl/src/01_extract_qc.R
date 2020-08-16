@@ -29,7 +29,7 @@ source("./EF_etl/src/fun/dp_ef_qcfx_csv.R")
 #------------------------
 # Path to sqlite database
 # db_path <- "exact path to my_database.sqlite"
-db_path <- "./123a_TEST.sqlite"
+# db_path <- "./123a_TEST.sqlite"
 
 # Project code
 proj <- "123a"
@@ -37,16 +37,51 @@ proj <- "123a"
 # Data set name: Create a unique data set name
 data_id <- "Dino2_Deso"
 
-# Name of directory containing target dataset
+# Name of directory containing target dataset (local)
 dir_name <- "dbf_123a_2"
 
 # Data year
 year <- year(now())
 
-#--------------------------
-# Connect to db to determine ending sample numner
 
-con <- dbConnect(RSQLite::SQLite(), db_path)
+# db_name <- "name_of_db.sqlite"
+db_name <- "TEST_123a.sqlite"
+
+# db_path <-  "path/to/database/" (Google Drive!!! [INCLUDE trailing /])
+db_path <- "data_mgt/project_template_test/123a/"
+
+# Your email address (google auth)
+# my_email <- "type it in here"
+my_email <- "cmichaud@utah.gov"
+
+
+#-------------------------------
+# Google Drive auth and io
+#-------------------------------
+
+# -----Authenticate to google drive-----
+
+drive_auth(email = my_email)
+
+gs4_auth(token = drive_token())
+
+
+#-----Locate database-----
+
+el_db <- drive_get(paste0(db_path, db_name))
+
+tmp <- tempfile(fileext = ".sqlite")
+drive_download(el_db[1, ], path = tmp, overwrite = TRUE)
+
+
+#-----Connect to database-----
+
+con <-  dbConnect(RSQLite::SQLite(), tmp)
+dbListTables(con)
+
+
+
+#-----Scrape last site_id and increment by 1------
 
 # Adds 1 to the last sample number currently in the database
 start_num <- 1 +
@@ -78,7 +113,7 @@ meta <- tibble(
 )
 
 #-------------------------------
-# Import field data (dbf)
+# Import field data (dbf) from local source
 #-------------------------------
 
 # This creates a large list, each dbf table is a separate list element
@@ -259,9 +294,6 @@ ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
 #------------------------------
 # Upload data to google drive
 #------------------------------
-drive_auth(email = "cmichaud@utah.gov")
-
-gs4_auth(token = drive_token())
 
 gs4_create(
   name = paste(proj, data_id, "TEST_raw",sep = "_"),
@@ -270,7 +302,7 @@ gs4_create(
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
-                ck_floy = ck_floy,
+#                ck_floy = ck_floy,
                 water = water)
   )
 
@@ -279,6 +311,6 @@ gs4_create(
 # created in the google drive root directory
 
 drive_mv(paste(proj, data_id, "TEST_raw",sep = "_"),
-         path = 'project_template_test/')
+         path = db_path)
 
 ## End

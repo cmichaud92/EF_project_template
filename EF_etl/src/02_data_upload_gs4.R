@@ -19,18 +19,55 @@ library(googlesheets4)
 proof_data <- "123a_Dino2_Deso_TEST_proof"
 
 # Path to sqlite database
-# db_path <- "exact path to my_database.sqlite"
-db_path <- "./123a_TEST.sqlite"
+# db_path <- "exact/path/to/my_database.sqlite"
+#db_path <- "./123a_TEST.sqlite"
+
+# OR
+
+# db_name <- "name_of_db.sqlite"
+db_name <- "123a.sqlite"
+
+# db_path <-  "path/to/database/" (INCLUDE trailing /)
+db_path <- "data_mgt/123a/"
 
 # Your email address (google auth)
 # my_email <- "type it in here"
 my_email <- "cmichaud@utah.gov"
 
+
 #-------------------------------
-# Create db connection
+# Google Drive auth and io
 #-------------------------------
 
-con <-  dbConnect(RSQLite::SQLite(), db_path)
+# -----Authenticate to google drive-----
+
+drive_auth(email = my_email)
+
+gs4_auth(token = drive_token())
+
+
+# -----Locate proofed dataset-----
+
+# If sets returns more than 1 observation LOOK carefully
+# Google drive allows multiple identical file names!!!!!
+
+sets <- drive_get(proof_data)
+
+
+#-----Locate database-----
+
+el_db <- drive_get("data_mgt/123a/123a.sqlite")
+
+tmp <- tempfile(fileext = ".sqlite")
+drive_download(el_db[1, ], path = tmp, overwrite = TRUE)
+
+con <-  dbConnect(RSQLite::SQLite(), tmp)
+dbListTables(con)
+
+
+#------------------------------
+# Upload ID
+#------------------------------
 
 # For initial upload
 # u_id <- 1
@@ -49,16 +86,6 @@ u_id <- 1 + (
 #-----------------------------
 # Google Drive (data io)
 #-----------------------------
-
-# Authenticate to google drive
-drive_auth(email = my_email)
-
-gs4_auth(token = drive_token())
-
-# Download proofed dataset
-# If sets returns more than 1 observation LOOK carefully
-# Google drive allows multiple identical file names!!!!!
-sets <- drive_get(proof_data)
 
 
 #---------------------------
@@ -113,6 +140,17 @@ dbWriteTable(con, name = "pittag", value = pit, append = TRUE)
 
 dbWriteTable(con, name = "floytag", value = floy, append = TRUE)
 
+
+# Archive old database version in googledrive
+drive_mv(el_db, path = paste0("z_archive/",
+                              "123a_arch_",
+                              format(as.Date(Sys.Date()), "%Y%m%d"),
+                              ".sqlite"))
+
+# Upload the updated database version to googledrive
+drive_upload(media = tmp,
+             path = "data_mgt/123a/",
+             name = "123a.sqlite")
 
 # Disconnect
 
