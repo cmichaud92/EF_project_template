@@ -19,7 +19,7 @@ library(UCRBtools)
 library(DBI)
 
 # source functions
-source("./EF_etl/src/fun/dp_ef_qcfx_csv.R")
+source("./src/fun/dp_ef_qcfx_csv.R")
 
 # build "exclude"
 `%!in%` <- Negate(`%in%`)
@@ -35,20 +35,20 @@ source("./EF_etl/src/fun/dp_ef_qcfx_csv.R")
 proj <- "123a"
 
 # Data set name: Create a unique data set name
-data_id <- "Dino2_Deso"
-
+# data_id <- "Dino2_Deso"
+data_id <- "Dino1"
 # Name of directory containing target dataset (local)
-dir_name <- "dbf_123a_2"
+dir_name <- "dbf_123a_1"
 
 # Data year
 year <- year(now())
 
 
 # db_name <- "name_of_db.sqlite"
-db_name <- "TEST_123a.sqlite"
+db_name <- "demo_123a.sqlite"
 
 # db_path <-  "path/to/database/" (Google Drive!!! [INCLUDE trailing /])
-db_path <- "data_mgt/project_template_test/123a/"
+db_path <- "data_mgt/Demo_EL_project/"
 
 # Your email address (google auth)
 # my_email <- "type it in here"
@@ -118,7 +118,7 @@ meta <- tibble(
 
 # This creates a large list, each dbf table is a separate list element
 
-data <- dbf_io(file_path_in = paste0("./EF_etl/data/", dir_name)) %>%
+data <- dbf_io(file_path_in = paste0("./data/", dir_name)) %>%
   map(rename_all, tolower) %>%
   compact()
 
@@ -296,7 +296,7 @@ ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
 #------------------------------
 
 gs4_create(
-  name = paste(proj, data_id, "TEST_raw",sep = "_"),
+  name = paste("Demo_raw", data_id, sep = "_"),
   sheets = list(meta = meta,
                 stats = ck_stat,
                 ck_site = ck_site,
@@ -310,7 +310,7 @@ gs4_create(
 # This moves data to 'project_template_test/' in google drive. Otherwise sheets is
 # created in the google drive root directory
 
-drive_mv(paste(proj, data_id, "TEST_raw",sep = "_"),
+drive_mv(paste("Demo_raw",data_id, sep = "_"),
          path = db_path)
 
 ## End
