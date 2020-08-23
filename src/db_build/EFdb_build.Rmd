@@ -12,7 +12,7 @@ library(dplyr)
 library(dbplyr)
 library(RSQLite)
 
-con <-  dbConnect(RSQLite::SQLite(), "c:/Users/cmichaud/proj_mgt/data_mgt/EF_project/EF_project_template/demo_123a.sqlite")  ## Change database name!!!
+con <-  dbConnect(RSQLite::SQLite(), "./demo_123a.sqlite")  ## Change database name!!!
 
 knitr::opts_chunk$set(echo = TRUE,
                       connection = "con")

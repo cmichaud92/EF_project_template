@@ -54,7 +54,7 @@ sets <- drive_get(proof_data)
 el_db <- drive_get(paste0(db_path, db_name))
 
 tmp <- tempfile(fileext = ".sqlite")
-drive_download(el_db[1, ], path = tmp, overwrite = TRUE)
+drive_download(el_db, path = tmp, overwrite = TRUE)
 
 con <-  dbConnect(RSQLite::SQLite(), tmp)
 dbListTables(con)

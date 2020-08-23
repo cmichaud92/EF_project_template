@@ -24,28 +24,61 @@ library(lubridate)
 library(DBI)
 library(UCRBtools)
 library(waterData)
+library(googledrive)
+library(googlesheets4)
 
 #----------------------------------------------------
 # User defined parameters
 #----------------------------------------------------
 
+# Project code
+proj <- "123a"
+
 # Year of interest
 yoi <- 2020
 
+# db_name <- "name_of_db.sqlite"
+db_name <- "demo_123a.sqlite"
+
+# db_path <-  "path/to/database/" (Google Drive!!! [INCLUDE trailing /])
+db_path <- "data_mgt/Demo_EL_project/"
+
+# Your email address (google auth)
+# my_email <- "type it in here"
+my_email <- "cmichaud@utah.gov"
+
+
+#-------------------------------
+# Google Drive auth and io
+#-------------------------------
+
+# ----- Authenticate to google drive -----
+
+drive_auth(email = my_email)
+
+gs4_auth(token = drive_token())
+
+
+# ----- Locate database -----
+
+el_db <- drive_get(paste0(db_path, db_name))
+
+tmp <- tempfile(fileext = ".sqlite")
+drive_download(el_db, path = tmp, overwrite = TRUE)
+
+
+# ----- Connect to database -----
+
+con <-  dbConnect(RSQLite::SQLite(), tmp)
+# dbListTables(con)
+
+
+
 #----------------------------------------------------
-# Establish database connection
+# Generate generic tables from the project database
 #----------------------------------------------------
 
-con <- dbConnect(RSQLite::SQLite(),
-                 "c:/Users/cmichaud/proj_mgt/database/sqlite/123d.sqlite")
-
-#dbDisconnect(con)
-
-#----------------------------------------------------
-# Generate generic tables from 123d.sqlite
-#----------------------------------------------------
-
-# -----Meta pointer-----
+# ----- Meta pointer -----
 
 meta_p <- tbl(con, "meta") %>%
   filter(year %in% yoi) %>%
@@ -189,8 +222,8 @@ cpue <- tbl(con, "site") %>%
            nesting(spp_code),
            fill = list(fish_ct = 0)) %>%
   filter(!is.na(spp_code)) %>%
-
-  mutate(last_modified = now())
+  mutate(cpue = round(fish_ct / (el_sec / 3600), 2),
+         last_modified = now())
 
 
 # ----- CPUE by lifestage (WE, SM, NP) -----
@@ -229,41 +262,60 @@ cpue_ls <- tbl(con, "site") %>%
 
 dbDisconnect(con)
 
+#-----------------------------------------
+# Check for/create data products directory
+#-----------------------------------------
+
+# Path to data products directory
+main_dir <- "./output"
+sub_dir <- paste0("data_products_", proj, "_",yoi,  "/")
+d_prod_dir <- paste(main_dir, sub_dir, sep = "/")
+
+# Determine if output directory exists
+dir.exists(main_dir)                               # If true continue, if false STOP
+
+# If not create it
+ifelse(!dir.exists(file.path(main_dir)), dir.create(file.path(main_dir)), FALSE)
+
+# Determine if the sub-directory exists, if not create it
+ifelse(!dir.exists(file.path(d_prod_dir)), dir.create(file.path(d_prod_dir)), FALSE)
+
 
 #--------------------------
 # Write datasets to .csv
 #--------------------------
 
-
 write.csv(site_tbl,
-          "./123d_analysis_2020/data/123d_2020_site.csv",
+          file = paste0(d_prod_dir, paste(proj, yoi, "site", sep = "_"), ".csv"),
           na = "NA",
           row.names = FALSE)
 
 write.csv(fish_tbl,
-          "./123d_analysis_2020/data/123d_2020_fish.csv",
+          file = paste0(d_prod_dir, paste(proj, yoi, "fish", sep = "_"), ".csv"),
           na = "NA",
           row.names = FALSE)
 
 write.csv(floy_tbl,
-          "./123d_analysis_2020/data/123d_2020_floy.csv",
+          file = paste0(d_prod_dir, paste(proj, yoi, "floy", sep = "_"), ".csv"),
           na = "NA",
           row.names = FALSE)
 
 
 write.csv(waterdata,
-          "./123d_analysis_2020/data/123d_2020_usgswater.csv",
+          file = paste0(d_prod_dir, paste(proj, yoi, "usgswater", sep = "_"), ".csv"),
           na = "NA",
           row.names = FALSE)
 
 write.csv(cpue,
-          "./123d_analysis_2020/data/123d_2020_cpue.csv",
+          file = paste0(d_prod_dir, paste(proj, yoi, "cpue", sep = "_"), ".csv"),
           na = "NA",
           row.names = FALSE)
 
 write.csv(cpue_ls,
-          "./123d_analysis_2020/data/123d_2020_cpue_ls.csv",
+          file = paste0(d_prod_dir, paste(proj, yoi, "cpue_ls", sep = "_"), ".csv"),
           na = "NA",
           row.names = FALSE)
 
+
+## End
 

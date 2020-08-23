@@ -66,22 +66,22 @@ drive_auth(email = my_email)
 gs4_auth(token = drive_token())
 
 
-#-----Locate database-----
+# ----- Locate database -----
 
 el_db <- drive_get(paste0(db_path, db_name))
 
 tmp <- tempfile(fileext = ".sqlite")
-drive_download(el_db[1, ], path = tmp, overwrite = TRUE)
+drive_download(el_db, path = tmp, overwrite = TRUE)
 
 
-#-----Connect to database-----
+# ----- Connect to database -----
 
 con <-  dbConnect(RSQLite::SQLite(), tmp)
 dbListTables(con)
 
 
 
-#-----Scrape last site_id and increment by 1------
+#----- Scrape 'max' site_id  from db and increment by 1 ------
 
 # Adds 1 to the last sample number currently in the database
 start_num <- 1 +
@@ -93,8 +93,6 @@ start_num <- 1 +
 
 dbDisconnect(con)
 
-# Set starting sample number manually (value = 1) for initial data set each year
-# start_num <- 1
 
 #-------------------------------
 # Create row for meta table
@@ -184,7 +182,7 @@ site <- site_tmp %>%
                          str_pad(site_num_crct, 3, "left", "0"),
                          sep = "_")) %>%
 
-  left_join(tbl_reach, by = c("reach" = "rch_code")) %>%                   # Add rvr_abbr variable
+  left_join(tbl_reach, by = c("reach" = "rch_code")) %>%                   # Add rvr_code variable
 
   select(s_index, site_id, project,
          year, river = rvr_code,
