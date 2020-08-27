@@ -17,7 +17,7 @@ library(googlesheets4)
 # Name of google sheets document containing PROOFED data to upload
 # proof_data <- "Exact file name as it appears in Google drive"
 # proof_data <- "Demo_final_Dino1"
-proof_data <- "Demo_final_Dino2_Deso"
+proof_data <- "Demo_final_Dino1"
 
 # db_name <- "name_of_db.sqlite"
 db_name <- "demo_123a.sqlite"
@@ -96,7 +96,7 @@ fish_tmp <- read_sheet(sets[1, ], range = "ck_fish")%>%
 pit_tmp <- read_sheet(sets[1, ], range = "ck_pit") %>%
   mutate_at("pit_type", as.character)
 
-# floy_tmp <- read_sheet(sets[1, ], range = "ck_floy")
+floy_tmp <- read_sheet(sets[1, ], range = "ck_floy")
 
 water_tmp <- read_sheet(sets[1, ], range = "water")
 
@@ -111,7 +111,7 @@ fish <- select(fish_tmp, -c(matches("_flg$|_index$|^key_"), reach)) %>%
   filter(!is.na(fish_id))
 pit <- select(pit_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
 
-# floy <- select(floy_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
+floy <- select(floy_tmp, -c(species, matches("_flg$|_index$|^key_|^site")))
 
 water <- water_tmp %>%
   select(-key_a)
@@ -129,7 +129,7 @@ dbWriteTable(con, name = "fish", value = fish, append = TRUE)
 
 dbWriteTable(con, name = "pittag", value = pit, append = TRUE)
 
-# dbWriteTable(con, name = "floytag", value = floy, append = TRUE)
+dbWriteTable(con, name = "floytag", value = floy, append = TRUE)
 
 
 # Archive old database version in googledrive

@@ -138,6 +138,32 @@ floy_tbl <- tbl(con, "floytag") %>%
 # Scrape water data from usgs
 #-----------------------------------------------------------
 
+# ----- Jensen UT -----
+
+# Discharge data
+jen_dis <- importDVs(staid = "09261000",
+                    code = "00060",
+                    stat = "00003",
+                    sdate = paste0(yoi - 1, "-12-31"),
+                    edate = paste0(yoi, "-12-31")) %>%
+  rename(discharge = val,
+         date = dates) %>%
+  select(staid, date, discharge)
+
+# Temperature data
+jen_temp <- importDVs(staid = "09261000",
+                     code = "00010",
+                     stat = "00003",
+                     sdate = paste0(yoi - 1, "-12-31"),
+                     edate = paste0(yoi, "-12-31")) %>%
+  rename(temp = val,
+         date = dates) %>%
+  select(-qualcode)
+
+jen_waterdata <- full_join(jen_dis, jen_temp, by = c("staid", "date")) %>%
+  mutate(sta_name = "Jensen, Utah",
+         rvr_code = "GR")
+
 
 # -----Green River UT-----
 
@@ -196,7 +222,7 @@ co_waterdata <- full_join(co_dis, co_temp, by = c("staid", "date")) %>%
 #-----------------------------------------------------------
 # Final water data set
 
-waterdata <- bind_rows(gr_waterdata, co_waterdata) %>%
+waterdata <- bind_rows(jen_waterdata, gr_waterdata, co_waterdata) %>%
   mutate(last_modified = now())
 
 
@@ -267,9 +293,9 @@ dbDisconnect(con)
 #-----------------------------------------
 
 # Path to data products directory
-main_dir <- "./output"
+main_dir <- "./output/"
 sub_dir <- paste0("data_products_", proj, "_",yoi,  "/")
-d_prod_dir <- paste(main_dir, sub_dir, sep = "/")
+d_prod_dir <- paste0(main_dir, sub_dir)
 
 # Determine if output directory exists
 dir.exists(main_dir)                               # If true continue, if false STOP
@@ -316,6 +342,18 @@ write.csv(cpue_ls,
           na = "NA",
           row.names = FALSE)
 
+
+zip_files <- list.files(d_prod_dir,
+                        pattern = ".csv$",
+                        full.names = TRUE)
+
+zip(zipfile = paste0(main_dir,"data_products_123a_2020"),
+    files = zip_files,
+    flags = " a -tzip",
+    zip = "C:\\Program Files\\7-Zip\\7z")
+
+drive_upload(media = paste0(main_dir,"data_products_123a_2020.zip"),
+             path = paste0(db_path, "z_archive/"))
 
 ## End
 

@@ -300,7 +300,7 @@ gs4_create(
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
-#                ck_floy = ck_floy,
+                ck_floy = ck_floy,
                 water = water)
   )
 

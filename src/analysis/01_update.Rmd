@@ -15,16 +15,58 @@ library(gt)
 library(sf)
 library(mapview)
 library(DBI)
+library(googledrive)
 
 theme_set(theme_bw())
 mapviewOptions(basemaps = c("Stamen.Terrain", "Esri.WorldImagery", "OpenTopoMap"))
 
 ```
 
-```{r connection, include=FALSE}
-con <-  dbConnect(RSQLite::SQLite(), "./TEST_EL_database.sqlite")  ## Change database name!!!
+```{r}
+# db_name <- "name_of_db.sqlite"
+db_name <- "demo_123a.sqlite"
+
+# db_path <-  "path/to/database/" (INCLUDE trailing /)
+db_path <- "data_mgt/Demo_EL_project/"
+
+# Your email address (google auth)
+# my_email <- "type it in here"
+my_email <- "cmichaud@utah.gov"
+
+
+#-------------------------------
+# Google Drive auth and io
+#-------------------------------
+
+# -----Authenticate to google drive-----
+
+drive_auth(email = my_email)
+
+#gs4_auth(token = drive_token())
+
+
+# -----Locate proofed dataset-----
+
+# If sets returns more than 1 observation LOOK carefully
+# Google drive allows multiple identical file names!!!!!
+
+#sets <- drive_get(proof_data)
+
+
+#-----Locate database-----
+
+el_db <- drive_get(paste0(db_path, db_name))
+
+tmp <- tempfile(fileext = ".sqlite")
+drive_download(el_db, path = tmp, overwrite = TRUE)
+
+con <-  dbConnect(RSQLite::SQLite(), tmp)
 dbListTables(con)
+
+
 ```
+
+
 
 
 ```{r}
@@ -78,9 +120,20 @@ f_cpue <- fish %>%
             cpue = round(catch/effort, 2),
             .groups = "drop")
 
-gt(f_cpue) %>% 
-  tab_header("Catch-per-unit-effort, all species, by reach and pass")
+# gt(f_cpue) %>% 
+#   tab_header("Catch-per-unit-effort, all species, by reach and pass")
 
+```
+
+```{r}
+f_cpue %>% 
+  filter(species == "SM") %>% 
+  group_by(reach) %>% 
+  summarise(effort = sum(effort, na.rm = TRUE),
+            catch = sum(catch, na.rm = TRUE),
+            cpue = round(catch / effort, 2)) %>% 
+  gt() %>% 
+  tab_header("Catch-per-unit-effort - smallmouth bass by reach, 2020")
 ```
 
 ___
@@ -94,11 +147,23 @@ lf <- fish %>%
 lf %>% 
   ggplot() +
   geom_freqpoly(aes(x = tot_length, color = reach), lwd = 2) +
-  labs(title = "Length frequency for smallmouth bass by reach",
+  labs(title = "Length frequency for smallmouth bass by reach, 2020",
        x = "Total length (mm)",
        y = "Number of smallmouth bass")
 
 
+```
+
+```{r}
+lf %>% 
+  group_by(reach) %>% 
+  summarise(mean_tl = round(mean(tot_length, na.rm = TRUE), 2),
+            min_tl = min(tot_length, na.rm = TRUE),
+            max_tl = max(tot_length, na.rm = TRUE),
+            sd_tl = sd(tot_length, na.rm = TRUE),
+            .groups = "drop") %>% 
+  gt() %>% 
+  tab_header(title = "Smallmouth bass total length stats by reach, 2020")
 ```
 
 ___
