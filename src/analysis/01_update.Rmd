@@ -22,17 +22,12 @@ mapviewOptions(basemaps = c("Stamen.Terrain", "Esri.WorldImagery", "OpenTopoMap"
 
 ```
 
+```{r config}
+config <- config::get("etl_config")
+
+```
+
 ```{r}
-# db_name <- "name_of_db.sqlite"
-db_name <- "demo_123a.sqlite"
-
-# db_path <-  "path/to/database/" (INCLUDE trailing /)
-db_path <- "data_mgt/Demo_EL_project/"
-
-# Your email address (google auth)
-# my_email <- "type it in here"
-my_email <- "cmichaud@utah.gov"
-
 
 #-------------------------------
 # Google Drive auth and io
@@ -40,22 +35,12 @@ my_email <- "cmichaud@utah.gov"
 
 # -----Authenticate to google drive-----
 
-drive_auth(email = my_email)
-
-#gs4_auth(token = drive_token())
+drive_auth(email = config$email)
 
 
-# -----Locate proofed dataset-----
+# ----- Locate database -----
 
-# If sets returns more than 1 observation LOOK carefully
-# Google drive allows multiple identical file names!!!!!
-
-#sets <- drive_get(proof_data)
-
-
-#-----Locate database-----
-
-el_db <- drive_get(paste0(db_path, db_name))
+el_db <- drive_get(paste0(config$db_path, config$db_name))
 
 tmp <- tempfile(fileext = ".sqlite")
 drive_download(el_db, path = tmp, overwrite = TRUE)

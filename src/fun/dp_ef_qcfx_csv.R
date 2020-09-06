@@ -15,15 +15,17 @@ site_qcfx <- function(site_data) {
   site_data %>%
   mutate(rmi_length_flg = ifelse(start_rmi - end_rmi > 5 | start_rmi < end_rmi, "FLAG", ""),
          rmi_flg = case_when(reach == "ECHO" & between(start_rmi, 319.9, 344.4) &
-                               reach == "ECHO" & between(end_rmi, 319.9, 344.4)~ "",
+                               reach == "ECHO" & between(end_rmi, 319.9, 344.4) ~ "",
                              reach == "DESO" & between(start_rmi, 128.5, 215.8) &
-                               reach == "DESO" & between(end_rmi, 128.5, 215.8)~ "",
+                               reach == "DESO" & between(end_rmi, 128.5, 215.8) ~ "",
                              reach == "LGR" & between(start_rmi, 0, 128.5) &
                                reach == "LGR" & between(end_rmi, 0, 128.5) ~ "",
                              reach == "LCO" & between(start_rmi, 0, 110.5) &
                                reach == "LCO" & between(end_rmi, 0, 110.5) ~ "",
                              reach == "WW" & between(start_rmi, 110.5, 127.6) &
                                reach == "WW" & between(end_rmi, 110.5, 127.6) ~ "",
+                             reach == "LSJ" & between(start_rmi, 0, 53) &
+                               reach == "LSJ" & between(end_rmi, 0, 53) ~ "",
                              TRUE ~ "FLAG"),
          datetime_flg = ifelse(as.duration(enddatetime - startdatetime)  < as.duration(el_sec), "FLAG", ""),
          el_sec_flg = ifelse(el_sec > 7200 | el_sec < 1000, "FLAG", ""),
@@ -49,6 +51,7 @@ fish_qcfx <- function(fish_data, site_data) {
                                reach == "LGR" & between(rmi, 0, 128.5) ~ "",
                                reach == "LCO" & between(rmi, 0, 110.5) ~ "",
                                reach == "WW" & between(rmi, 110.5, 127.6) ~ "",
+                               reach == "LSJ" & between(rmi, 0, 53) ~ "",
                                TRUE ~ "FLAG"),
            species_flg = ifelse(species %!in% com_spp, "FLAG", ""),
            tot_length_flg = ifelse(species %!in% c("CC", "GC", "NP") & tot_length > 1000, "FLAG", ""),
@@ -87,19 +90,20 @@ floy_qcfx <- function(floy_data, fish_data) {
 # Stats
 #---------------------
 
-stats_qcfx <- function(site_data, fish_data) {
+stats_qcfx <- function(site_data, fish_data, spp) {
   f <- fish_data %>%
-    filter(species == "SM") %>%
+    filter(species %in% spp) %>%
     group_by(site_id) %>%
-    summarise(SM = n(),
+    summarise(ct = n(),
               .groups = "drop")
   site_data %>%
     left_join(f, by = "site_id") %>%
     group_by(pass) %>%
     summarise(n_site = n(),
               effort_hr = round(sum(el_sec) / 3600, 2),
-              SM = sum(SM, na.rm = TRUE),
-              cpue = round(SM / effort_hr, 2),
+              catch = sum(ct, na.rm = TRUE),
+              cpue = round(catch / effort_hr, 2),
+              species = spp,
               .groups = "drop")
 }
 

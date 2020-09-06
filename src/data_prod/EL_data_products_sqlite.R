@@ -38,10 +38,10 @@ proj <- "123a"
 yoi <- 2020
 
 # db_name <- "name_of_db.sqlite"
-db_name <- "demo_123a.sqlite"
+db_name <- "123a_WithUpload2.sqlite"
 
 # db_path <-  "path/to/database/" (Google Drive!!! [INCLUDE trailing /])
-db_path <- "data_mgt/Demo_EL_project/"
+db_path <- "data_mgt/123a/"
 
 # Your email address (google auth)
 # my_email <- "type it in here"
@@ -292,19 +292,19 @@ dbDisconnect(con)
 # Check for/create data products directory
 #-----------------------------------------
 
-# Path to data products directory
-main_dir <- "./output/"
-sub_dir <- paste0("data_products_", proj, "_",yoi,  "/")
-d_prod_dir <- paste0(main_dir, sub_dir)
-
-# Determine if output directory exists
-dir.exists(main_dir)                               # If true continue, if false STOP
-
-# If not create it
-ifelse(!dir.exists(file.path(main_dir)), dir.create(file.path(main_dir)), FALSE)
-
-# Determine if the sub-directory exists, if not create it
-ifelse(!dir.exists(file.path(d_prod_dir)), dir.create(file.path(d_prod_dir)), FALSE)
+# # Path to data products directory
+# main_dir <- "./output/"
+# sub_dir <- paste0("data_products_", proj, "_",yoi,  "/")
+# d_prod_dir <- paste0(main_dir, sub_dir)
+#
+# # Determine if output directory exists
+# dir.exists(main_dir)                               # If true continue, if false STOP
+#
+# # If not create it
+# ifelse(!dir.exists(file.path(main_dir)), dir.create(file.path(main_dir)), FALSE)
+#
+# # Determine if the sub-directory exists, if not create it
+# ifelse(!dir.exists(file.path(d_prod_dir)), dir.create(file.path(d_prod_dir)), FALSE)
 
 
 #--------------------------

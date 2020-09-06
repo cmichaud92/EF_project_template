@@ -10,8 +10,6 @@
 
 library(tidyverse)
 library(lubridate)
-library(stringr)
-library(openxlsx)
 library(sf)
 library(googlesheets4)
 library(googledrive)
@@ -24,6 +22,8 @@ source("./src/fun/dp_ef_qcfx_csv.R")
 # build "exclude"
 `%!in%` <- Negate(`%in%`)
 
+config <- config::get("demon_config")
+
 #------------------------
 # Required variables
 #------------------------
@@ -32,27 +32,17 @@ source("./src/fun/dp_ef_qcfx_csv.R")
 # db_path <- "./123a_TEST.sqlite"
 
 # Project code
-proj <- "123a"
+# proj <- "123a"
 
 # Data set name: Create a unique data set name
 # data_id <- "Dino2_Deso"
-data_id <- "Dino1"
+# data_id <- "Dino1"
+data_id <- "demon_1"
 # Name of directory containing target dataset (local)
-dir_name <- "dbf_123a_1"
+# dir_name <- "dbf_123a_1"
 
 # Data year
-year <- year(now())
-
-
-# db_name <- "name_of_db.sqlite"
-db_name <- "demo_123a.sqlite"
-
-# db_path <-  "path/to/database/" (Google Drive!!! [INCLUDE trailing /])
-db_path <- "data_mgt/Demo_EL_project/"
-
-# Your email address (google auth)
-# my_email <- "type it in here"
-my_email <- "cmichaud@utah.gov"
+dat_yr <- year(now())
 
 
 #-------------------------------
@@ -61,22 +51,37 @@ my_email <- "cmichaud@utah.gov"
 
 # -----Authenticate to google drive-----
 
-drive_auth(email = my_email)
+drive_auth(email = config$email)
 
 gs4_auth(token = drive_token())
+
+# ----- Change working dir -----
+proj_wd <- getwd()
+dbf_dir <- tempdir()
+
+# ----- Locate .dbf files and download -----
+
+#raw_dat <- drive_get(config$data_dbf)
+#tmp_dat <- tempdir()
+
+dbf_files <- drive_ls(path = config$data_dbf)
+setwd(dbf_dir)
+walk(dbf_files$id, ~ drive_download(as_id(.x), overwrite = TRUE))
+setwd(proj_wd)
 
 
 # ----- Locate database -----
 
-el_db <- drive_get(paste0(db_path, db_name))
+el_db <- drive_get(paste0(config$db_path, config$db_name))
 
-tmp <- tempfile(fileext = ".sqlite")
-drive_download(el_db, path = tmp, overwrite = TRUE)
+
+tmp_db <- tempfile(fileext = ".sqlite")
+drive_download(el_db, path = tmp_db, overwrite = TRUE)
 
 
 # ----- Connect to database -----
 
-con <-  dbConnect(RSQLite::SQLite(), tmp)
+con <-  dbConnect(RSQLite::SQLite(), tmp_db)
 dbListTables(con)
 
 
@@ -102,12 +107,12 @@ dbDisconnect(con)
 # This is only required for the first data set each year
 
 meta <- tibble(
-  project_code = "123a",
-  year = year,
-  principal_fname = "John",
-  principal_lname = "Caldwell",
-  agency = "UDWR-M",
-  data_type = "EL"
+  project_code = config$proj,
+  year = dat_yr,
+  principal_fname = config$pi_fname,
+  principal_lname = config$pi_lname,
+  agency = config$agency,
+  data_type = config$data_type
 )
 
 #-------------------------------
@@ -116,7 +121,7 @@ meta <- tibble(
 
 # This creates a large list, each dbf table is a separate list element
 
-data <- dbf_io(file_path_in = paste0("./data/", dir_name)) %>%
+data <- dbf_io(file_path_in = dbf_dir) %>%
   map(rename_all, tolower) %>%
   compact()
 
@@ -156,6 +161,10 @@ floy_tmp <- map_df(data[grepl("floytag", names(data))], bind_rows) %>%
   filter(!is.na(floy_num)) %>%
   mutate_all(na_if, "Z") %>%
   select(-floy_id)
+
+# Vial
+vial_tmp <- map_df(data[grepl("vial", names(data))], bind_rows) %>%
+  mutate_all(na_if, "Z")
 
 #------------------------------
 # Modify data
@@ -287,20 +296,23 @@ ck_pit <- pit_qcfx(pit_data = pittag, fish_data = fish)
 
 ck_floy <- floy_qcfx(floy_data = floytag, fish_data = fish)
 
-ck_stat <- stats_qcfx(site_data = site, fish_data = fish)
+ck_stat <- stats_qcfx(site_data = site, fish_data = fish, spp = c("RZ"))
+
+ck_vial <- vial_tmp
 
 #------------------------------
 # Upload data to google drive
 #------------------------------
 
 gs4_create(
-  name = paste("Demo_raw", data_id, sep = "_"),
+  name = paste("raw", data_id, sep = "_"),
   sheets = list(meta = meta,
                 stats = ck_stat,
                 ck_site = ck_site,
                 ck_fish = ck_fish,
                 ck_pit = ck_pit,
                 ck_floy = ck_floy,
+                ck_vial = ck_vial,
                 water = water)
   )
 
@@ -308,7 +320,7 @@ gs4_create(
 # This moves data to 'project_template_test/' in google drive. Otherwise sheets is
 # created in the google drive root directory
 
-drive_mv(paste("Demo_raw",data_id, sep = "_"),
-         path = db_path)
+drive_mv(paste("raw", data_id, sep = "_"),
+         path = config$db_path)
 
 ## End

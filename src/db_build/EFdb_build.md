@@ -1,6 +1,6 @@
 ---
-title: "SQLite db build"
-date: "22 August, 2020"
+title: "SQLite db build: San Juan Mercury Study"
+date: "01 September, 2020"
 output:
   html_document:
     keep_md: true

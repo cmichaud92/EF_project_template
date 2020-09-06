@@ -1,5 +1,5 @@
 ---
-title: "SQLite db build"
+title: "SQLite db build: San Juan Mercury Study"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
@@ -12,7 +12,7 @@ library(dplyr)
 library(dbplyr)
 library(RSQLite)
 
-con <-  dbConnect(RSQLite::SQLite(), "./demo_123a.sqlite")  ## Change database name!!!
+con <-  dbConnect(RSQLite::SQLite(), "./SJ_Hg.sqlite")  ## Change database name!!!
 
 knitr::opts_chunk$set(echo = TRUE,
                       connection = "con")

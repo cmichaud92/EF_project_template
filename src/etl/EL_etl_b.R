@@ -19,16 +19,10 @@ library(googlesheets4)
 # proof_data <- "Demo_final_Dino1"
 proof_data <- "Demo_final_Dino1"
 
-# db_name <- "name_of_db.sqlite"
-db_name <- "demo_123a.sqlite"
-
-# db_path <-  "path/to/database/" (INCLUDE trailing /)
-db_path <- "data_mgt/Demo_EL_project/"
-
-# Your email address (google auth)
-# my_email <- "type it in here"
-my_email <- "cmichaud@utah.gov"
-
+#-------------------------------
+# Fetch config
+#-------------------------------
+gdb <- config::get("123a_google_db")
 
 #-------------------------------
 # Google Drive auth and io
@@ -36,7 +30,7 @@ my_email <- "cmichaud@utah.gov"
 
 # -----Authenticate to google drive-----
 
-drive_auth(email = my_email)
+drive_auth(email = gdb$email)
 
 gs4_auth(token = drive_token())
 
@@ -51,7 +45,7 @@ sets <- drive_get(proof_data)
 
 #-----Locate database-----
 
-el_db <- drive_get(paste0(db_path, db_name))
+el_db <- drive_get(paste0(gdb$db_path, gdb$db_name))
 
 tmp <- tempfile(fileext = ".sqlite")
 drive_download(el_db, path = tmp, overwrite = TRUE)
@@ -84,23 +78,23 @@ u_id <- 1 + (
 #---------------------------
 
 # Import data
-site_tmp <- read_sheet(sets[1, ], range = "ck_site") %>%
+site_tmp <- read_sheet(sets, range = "ck_site") %>%
   mutate_if(is.POSIXct, as.character) %>%
   rename(project_code = project) %>%
   mutate(upload_id = u_id)
 
 
-fish_tmp <- read_sheet(sets[1, ], range = "ck_fish")%>%
+fish_tmp <- read_sheet(sets, range = "ck_fish")%>%
   mutate_if(is.POSIXct, as.character)
 
-pit_tmp <- read_sheet(sets[1, ], range = "ck_pit") %>%
+pit_tmp <- read_sheet(sets, range = "ck_pit") %>%
   mutate_at("pit_type", as.character)
 
-floy_tmp <- read_sheet(sets[1, ], range = "ck_floy")
+floy_tmp <- read_sheet(sets, range = "ck_floy")
 
-water_tmp <- read_sheet(sets[1, ], range = "water")
+water_tmp <- read_sheet(sets, range = "water")
 
-meta <- read_sheet(sets[1, ], range = "meta")
+meta <- read_sheet(sets, range = "meta")
 
 #--------------------------------
 # Remove index columns
@@ -133,15 +127,14 @@ dbWriteTable(con, name = "floytag", value = floy, append = TRUE)
 
 
 # Archive old database version in googledrive
-drive_mv(el_db, path = paste0(db_path, "z_archive/",
-                              "demo_123a_arch_",
+drive_mv(el_db, path = paste0(gdb$db_arch,
                               format(as.Date(Sys.Date()), "%Y%m%d"),
                               ".sqlite"))
 
 # Upload the updated database version to googledrive
 drive_upload(media = tmp,
-             path = "data_mgt/Demo_EL_project/",
-             name = "demo_123a.sqlite")
+             path = paste0(gdb$db_path),
+             name = gdb$db_name)
 
 # Disconnect
 
